@@ -18,9 +18,10 @@ class CreatePostsTable extends Migration
             $table->bigInteger('user_id')->unsigned()->default(1);
             $table->string('subject');
             $table->text('message');
+            $table->string('file')->default(null);
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 

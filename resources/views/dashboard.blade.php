@@ -10,12 +10,15 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     You're logged in!
-                    <form method="post" action="{{ url('add-post') }}">
+
+                    <form  enctype="multipart/form-data" method="post" action="{{ url('add-post') }}">
                         @csrf
                         Тема: <input type="text" name="subject">
                         Сообщение: <input type="text" name="message">
+                        Файл: <input type="file" name="file">
                         <input type="submit">
                     </form>
+
                 </div>
             </div>
         </div>
