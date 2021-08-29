@@ -19,6 +19,8 @@ class CreatePostsTable extends Migration
             $table->string('subject');
             $table->text('message');
             $table->string('file')->default(null);
+            $table->string('file_name')->default(null);
+            $table->text('answer')->default(null);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();

@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 
 class UserSeeder extends Seeder
 {
@@ -17,7 +18,7 @@ class UserSeeder extends Seeder
     public function run()
     {
         //
-        $manager = Role::where('role','manager')->first();
+        $manager = Role::where('role',Config::get('constants.roles.manager'))->first();
 
         $user1 = new User();
         $user1->name = 'Образцова Алена';
