@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +38,27 @@ class PostController extends Controller
 
         $post->save();
 
+        return redirect('dashboard');
+    }
+
+    // display post page to a manager
+    public function answer_page ($id)
+    {
+        if (Auth::user()->hasRole(Config::get('constants.roles.manager')))
+        {
+            $post = Post::all()->where('id', $id)->first();
+            return view('post')->with('post', $post);
+        }
+        else
+        {
+            return redirect('/dashboard');
+        }
+    }
+
+    // add post answer
+    public function add_answer(Request $request, $id)
+    {
+        Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
         return redirect('dashboard');
     }
 

@@ -23,4 +23,7 @@ Route::get('/dashboard', function () {
 
 Route::post('add-post',  [\App\Http\Controllers\PostController::class, 'add']);
 
+Route::get('/post/{id}', [\App\Http\Controllers\PostController::class, 'answer_page'])->middleware(['auth']);
+Route::post('/post/{id}', [\App\Http\Controllers\PostController::class, 'add_answer']);
+
 require __DIR__.'/auth.php';
