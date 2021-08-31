@@ -38,4 +38,18 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof \Illuminate\Http\Exceptions\PostTooLargeException) {
+            return $this->customHandle();
+        }
+        return parent::render($request, $exception);
+    }
+
+    protected function customHandle()
+    {
+        return \Illuminate\Support\Facades\Redirect::back()->withErrors(['error' => 'File is too big']);
+    }
+
 }

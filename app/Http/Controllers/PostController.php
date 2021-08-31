@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -16,7 +17,7 @@ class PostController extends Controller
      * Сохранить новую запрос клиента.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Routing\Redirector
+     * @return \Illuminate\Routing\Redirector|\Illuminate\Http\RedirectResponse
      */
     public function add(Request $request)
     {
@@ -46,7 +47,11 @@ class PostController extends Controller
             $post->file_name = "";
         }
 
-        $post->save();
+        try {
+            $post->save();
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return redirect('dashboard');
     }
@@ -72,7 +77,12 @@ class PostController extends Controller
             'answer' => 'required',
         ]);
 
-        Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
+        try {
+            Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
         return redirect('dashboard');
     }
 

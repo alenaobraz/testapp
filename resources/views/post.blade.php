@@ -17,11 +17,15 @@
     </form>
 
     @if ($errors->any())
-        <div style="color: red">
+        <div style="color: green">
             <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
+    @endif
+
+    @if (session('error'))
+        <div style="color: red">Ошибка, обратитесь к админитсратору: <br>{{ session('error') }}</div>
     @endif
