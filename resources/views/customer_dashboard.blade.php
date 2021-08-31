@@ -7,6 +7,17 @@
     <input type="submit">
 </form>
 
+@if ($errors->any())
+    <div style="color: red">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+
 <h1>Ваши запросы:</h1>
 <table>
     <thead>

@@ -11,12 +11,22 @@ use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    //
-   static $upload_folder = 'public/downloads';
 
-    // add new post
+    /**
+     * Сохранить новую запрос клиента.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Routing\Redirector
+     */
     public function add(Request $request)
     {
+
+        $validated = $request->validate([
+            'subject' => 'required|max:255',
+            'message' => 'required',
+            'file' => 'max:2000',
+        ]);
+
         $post = new Post;
 
         $post->subject = $request->subject;
@@ -58,6 +68,10 @@ class PostController extends Controller
     // add post answer
     public function add_answer(Request $request, $id)
     {
+        $validated = $request->validate([
+            'answer' => 'required',
+        ]);
+
         Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
         return redirect('dashboard');
     }
