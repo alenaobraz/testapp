@@ -4,6 +4,7 @@
     Тема: <input type="text" name="subject">
     Сообщение: <input type="text" name="message">
     Файл: <input type="file" name="file">
+    <input type="hidden" name="created_at">
     <input type="submit">
 </form>
 
@@ -16,7 +17,14 @@
         </ul>
     </div>
 @endif
+@if (session('error'))
+    <div style="color: red">{{ session('error') }}</div>
+@endif
 
+@if(Session::has('message'))
+    <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{
+     Session::get('message') }}</p>
+@endif
 
 <h1>Ваши запросы:</h1>
 <table>
