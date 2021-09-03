@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Post;
@@ -15,31 +16,12 @@ class PostController extends Controller
     /**
      * Сохранить новую заявку клиента, не чаще 1 раза в сутки.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\PostRequest  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function addPost(Request $request)
+    public function addPost(PostRequest $request)
     {
         if(self::postOnceDay()) {
-
-            $rules = [
-                'subject' => 'required|max:255',
-                'message' => 'required',
-                'file' => 'max:1024',
-            ];
-            $messages = [
-                'subject.required' => ':attribute обязательное поле',
-                'subject.max' => 'Поле :attribute должно содержать не бошльше 255 знаков',
-                'message.required' => ':attribute обязательное поле',
-                'file.max' => 'Размер файла не более :max КБ',
-                'file.uploaded' => 'Ошибка загрузки файла',
-            ];
-            $attributes = [
-                'subject' => 'Тема',
-                'message' => 'Сообщение',
-            ];
-            $validated = $this->validate($request, $rules, $messages, $attributes);
-
 
             $post = new Post;
 
@@ -67,7 +49,6 @@ class PostController extends Controller
         }
         else
         {
-
             return back()->withError("Вы можете отправлять не более 1 сообщения в сутки. Следующее не ранее ".Post::where('user_id', Auth::id())->orderBy('created_at','desc')->first()->created_at->addDays(1)->toDateTimeString());
         }
     }
@@ -117,7 +98,12 @@ class PostController extends Controller
      */
     public static function fileUpload($file)
     {
-       return basename(Storage::putFile(Config::get('constants.upload_folder'), $file));
+        try {
+            return basename(Storage::putFile(Config::get('constants.upload_folder'), $file));
+        }
+        catch (\Exception $e) {
+            return back()->withError("Ошибка загрузки файла");
+        }
     }
 
     /**
