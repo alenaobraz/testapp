@@ -1,3 +1,21 @@
+
+- Данные для коннекта к БД в config/database.php (поменять при необходимости на свои)
+
+>'database' => env('DB_DATABASE', 'testapp'),
+
+> 'username' => env('DB_USERNAME', 'root'),
+
+> 'password' => env('DB_PASSWORD', ''),
+
+
+- Создание таблиц базы данных:
+> php artisan migrate
+
+- Заполнение БД начальными значениями (создаст роли Клиент и Менеджер, пользователя с ролью Менеджер, логин "enjoy.obraz@gmail.com", пароль "123qweasd"):
+> php artisan db:seed
+
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
 
 <p align="center">
