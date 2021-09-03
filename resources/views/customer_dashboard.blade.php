@@ -1,5 +1,5 @@
 <h2>Оставить заявку:</h2>
-<form  enctype="multipart/form-data" method="post" action="{{ url('add-post') }}">
+<form  enctype="multipart/form-data" method="post" action="{{ route('add.post') }}">
     @csrf
     Тема: <input type="text" name="subject">
     Сообщение: <input type="text" name="message">

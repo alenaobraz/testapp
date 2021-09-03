@@ -10,7 +10,7 @@
     </p>
     <p>Дата: {{ $post->created_at }}</p>
 
-    <form  enctype="multipart/form-data" method="post" action="{{ url('post/'.$post->id.'') }}">
+    <form  enctype="multipart/form-data" method="post" action="{{ route('post.answer.add', ['id' => $post->id]) }}">
         @csrf
         Ответ: <textarea name="answer"></textarea>
         <input type="submit">

@@ -64,7 +64,7 @@ class PostController extends Controller
                 return back()->withError($exception->getMessage())->withInput();
             }
 
-            return redirect('dashboard');
+            return redirect()->route('dashboard');
         }
         else
         {
@@ -83,7 +83,7 @@ class PostController extends Controller
         }
         else
         {
-            return redirect('/dashboard');
+            return redirect()->route('dashboard');;
         }
     }
 
@@ -95,7 +95,7 @@ class PostController extends Controller
         ]);
 
         Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
-        return redirect('dashboard');
+        return redirect()->route('dashboard');;
     }
 
     // file upload function
