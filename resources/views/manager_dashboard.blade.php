@@ -25,7 +25,7 @@
             @endif
         </td>
         <td>{{ $post->created_at }}</td>
-        <td><a target="_blank" href="{{ route('post.answer.page', ['id' => $post->id]) }}">Ответить</a></td>
+        <td><a target="_blank" href="{{ route('post.display.post', ['id' => $post->id]) }}">Ответить</a></td>
     </tr>
 @endforeach
 </table>

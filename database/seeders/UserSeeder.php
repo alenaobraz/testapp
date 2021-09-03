@@ -18,13 +18,11 @@ class UserSeeder extends Seeder
     public function run()
     {
         //
-        $manager = Role::where('role',Config::get('constants.roles.manager'))->first();
-
         $user1 = new User();
         $user1->name = 'Образцова Алена';
         $user1->email = 'enjoy.obraz@gmail.com';
         $user1->password = bcrypt('123qweasd');
         $user1->save();
-        $user1->roles()->attach($manager);
+        $user1->setRole(Config::get('constants.roles.manager'));    
     }
 }

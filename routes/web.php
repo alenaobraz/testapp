@@ -21,11 +21,11 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-Route::post('/add/post',  [\App\Http\Controllers\PostController::class, 'add'])->middleware(['auth'])->name('add.post');
+Route::post('/add/post',  [\App\Http\Controllers\PostController::class, 'addPost'])->middleware(['auth'])->name('add.post');
 
 Route::group(['prefix' => 'post', 'as' => 'post.', 'middleware' => ['auth']], function () {
-    Route::get('{id}', [\App\Http\Controllers\PostController::class, 'answer_page'])->name('answer.page');
-    Route::post('{id}', [\App\Http\Controllers\PostController::class, 'add_answer'])->name('answer.add');
+    Route::get('{id}', [\App\Http\Controllers\PostController::class, 'getPost'])->name('display.post');
+    Route::post('{id}', [\App\Http\Controllers\PostController::class, 'addAnswer'])->name('answer.add');
 });
 
 

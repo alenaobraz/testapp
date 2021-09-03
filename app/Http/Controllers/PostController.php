@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Post;
@@ -14,14 +13,14 @@ class PostController extends Controller
 {
 
     /**
-     * Сохранить новый запрос клиента.
+     * Сохранить новую заявку клиента, не чаще 1 раза в сутки.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Routing\Redirector|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function add(Request $request)
+    public function addPost(Request $request)
     {
-        if(self::post_once_day()) {
+        if(self::postOnceDay()) {
 
             $rules = [
                 'subject' => 'required|max:255',
@@ -51,7 +50,7 @@ class PostController extends Controller
             $post->user_id = Auth::id();
 
             if ($request->file('file')) {
-                $post->file = self::file_upload($request->file('file'));
+                $post->file = self::fileUpload($request->file('file'));
                 $post->file_name = $request->file('file')->getClientOriginalName();
             } else {
                 $post->file = "";
@@ -60,8 +59,8 @@ class PostController extends Controller
 
             try {
                 $post->save();
-            } catch (Exception $e) {
-                return back()->withError($exception->getMessage())->withInput();
+            } catch (\Exception $e) {
+                return back()->withError($e->getMessage())->withInput();
             }
 
             return redirect()->route('dashboard');
@@ -73,10 +72,16 @@ class PostController extends Controller
         }
     }
 
-    // display post page to a manager
-    public function answer_page ($id)
+    /**
+     * Показывает страницу конкретной заявки менеджеру.
+     * Если не менеджер, то перенаправляет на основную страницу личного кабинета
+     *
+     * @param  integer  $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Contracts\View\View
+     */
+    public function getPost (int $id)
     {
-        if (Auth::user()->hasRole(Config::get('constants.roles.manager')))
+        if (auth()->user()->hasRole(Config::get('constants.roles.manager')))
         {
             $post = Post::find($id);
             return view('post')->with('post', $post);
@@ -87,8 +92,14 @@ class PostController extends Controller
         }
     }
 
-    // add post answer
-    public function add_answer(Request $request, $id)
+    /**
+     * Сохранить ответ менеджера на заявку клиента.
+     * @param  integer  $id
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function addAnswer(Request $request, int $id)
     {
         $validated = $request->validate([
             'answer' => 'required',
@@ -98,14 +109,23 @@ class PostController extends Controller
         return redirect()->route('dashboard');;
     }
 
-    // file upload function
-    public static function file_upload($file)
+    /**
+     * Загрузка файла на сервер.
+     *
+     * @param  \Illuminate\Http\File|\Illuminate\Http\UploadedFile $file
+     * @return string
+     */
+    public static function fileUpload($file)
     {
        return basename(Storage::putFile(Config::get('constants.upload_folder'), $file));
     }
 
-    // last post day for a customer + 1 day
-    public static function post_once_day()
+    /**
+     * Проверяет, оставлял ли клиент запрос за послдение сутки.
+     *
+     * @return bool
+     */
+    public static function postOnceDay()
     {
         if(Post::where('user_id', Auth::id())->where('created_at', '>=', Carbon::now()->subDay(1))->count() > 0)
         {
