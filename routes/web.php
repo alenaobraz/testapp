@@ -21,9 +21,12 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-Route::post('add-post',  [\App\Http\Controllers\PostController::class, 'add']);
+Route::post('/add/post',  [\App\Http\Controllers\PostController::class, 'addPost'])->middleware(['auth'])->name('add.post');
 
-Route::get('/post/{id}', [\App\Http\Controllers\PostController::class, 'answer_page'])->middleware(['auth']);
-Route::post('/post/{id}', [\App\Http\Controllers\PostController::class, 'add_answer']);
+Route::group(['prefix' => 'post', 'as' => 'post.', 'middleware' => ['auth']], function () {
+    Route::get('{id}', [\App\Http\Controllers\PostController::class, 'getPost'])->name('display.post');
+    Route::post('{id}', [\App\Http\Controllers\PostController::class, 'addAnswer'])->name('answer.add');
+});
+
 
 require __DIR__.'/auth.php';

@@ -1,14 +1,15 @@
 <h2>Оставить заявку:</h2>
-<form  enctype="multipart/form-data" method="post" action="{{ url('add-post') }}">
+<form  enctype="multipart/form-data" method="post" action="{{ route('add.post') }}">
     @csrf
     Тема: <input type="text" name="subject">
     Сообщение: <input type="text" name="message">
     Файл: <input type="file" name="file">
+    <input type="hidden" name="created_at">
     <input type="submit">
 </form>
 
 @if ($errors->any())
-    <div style="color: green">
+    <div style="color: red">
         <ul>
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -16,9 +17,13 @@
         </ul>
     </div>
 @endif
-
 @if (session('error'))
-    <div style="color: red">Ошибка, обратитесь к админитсратору: <br>{{ session('error') }}</div>
+    <div style="color: red">{{ session('error') }}</div>
+@endif
+
+@if(Session::has('message'))
+    <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{
+     Session::get('message') }}</p>
 @endif
 
 <h1>Ваши запросы:</h1>

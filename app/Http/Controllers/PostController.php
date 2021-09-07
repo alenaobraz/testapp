@@ -2,94 +2,124 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\PostRequest;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
 
     /**
-     * Сохранить новую запрос клиента.
+     * Сохранить новую заявку клиента, не чаще 1 раза в сутки.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Routing\Redirector|\Illuminate\Http\RedirectResponse
+     * @param  \App\Http\Requests\PostRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function add(Request $request)
+    public function addPost(PostRequest $request)
     {
+        if(self::postOnceDay()) {
 
-        $validated = $request->validate([
-            'subject' => 'required|max:255',
-            'message' => 'required',
-            'file' => 'max:2000',
-        ]);
+            $post = new Post;
 
-        $post = new Post;
+            $post->subject = $request->subject;
+            $post->message = $request->message;
+            $post->answer = "";
 
-        $post->subject = $request->subject;
-        $post->message = $request->message;
-        $post->answer = "";
+            $post->user_id = Auth::id();
 
-        $post->user_id = Auth::id();
+            if ($request->file('file')) {
+                $post->file = self::fileUpload($request->file('file'));
+                $post->file_name = $request->file('file')->getClientOriginalName();
+            } else {
+                $post->file = "";
+                $post->file_name = "";
+            }
 
-        if($request->file('file'))
-        {
-            $post->file = self::file_upload($request->file('file'));
-            $post->file_name = $request->file('file')->getClientOriginalName();
+            try {
+                $post->save();
+            } catch (\Exception $e) {
+                return back()->withError($e->getMessage())->withInput();
+            }
+
+            return redirect()->route('dashboard');
         }
         else
         {
-            $post->file = "";
-            $post->file_name = "";
+            return back()->withError("Вы можете отправлять не более 1 сообщения в сутки. Следующее не ранее ".Post::where('user_id', Auth::id())->orderBy('created_at','desc')->first()->created_at->addDays(1)->toDateTimeString());
         }
-
-        try {
-            $post->save();
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return redirect('dashboard');
     }
 
-    // display post page to a manager
-    public function answer_page ($id)
+    /**
+     * Показывает страницу конкретной заявки менеджеру.
+     * Если не менеджер, то перенаправляет на основную страницу личного кабинета
+     *
+     * @param  integer  $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Contracts\View\View
+     */
+    public function getPost (int $id)
     {
-        if (Auth::user()->hasRole(Config::get('constants.roles.manager')))
+        if (auth()->user()->hasRole(Config::get('constants.roles.manager')))
         {
-            $post = Post::all()->where('id', $id)->first();
+            $post = Post::find($id);
             return view('post')->with('post', $post);
         }
         else
         {
-            return redirect('/dashboard');
+            return redirect()->route('dashboard');;
         }
     }
 
-    // add post answer
-    public function add_answer(Request $request, $id)
+    /**
+     * Сохранить ответ менеджера на заявку клиента.
+     * @param  integer  $id
+     * @param  \Illuminate\Http\Request  $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function addAnswer(Request $request, int $id)
     {
         $validated = $request->validate([
             'answer' => 'required',
         ]);
 
-        try {
-            Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return redirect('dashboard');
+        Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
+        return redirect()->route('dashboard');;
     }
 
-    // file upload function
-    static function file_upload($file)
+    /**
+     * Загрузка файла на сервер.
+     *
+     * @param  \Illuminate\Http\File|\Illuminate\Http\UploadedFile $file
+     * @return string
+     */
+    public static function fileUpload($file)
     {
-       return basename(Storage::putFile(Config::get('constants.upload_folder'), $file));
+        try {
+            return basename(Storage::putFile(Config::get('constants.upload_folder'), $file));
+        }
+        catch (\Exception $e) {
+            return back()->withError("Ошибка загрузки файла");
+        }
+    }
+
+    /**
+     * Проверяет, оставлял ли клиент запрос за послдение сутки.
+     *
+     * @return bool
+     */
+    public static function postOnceDay()
+    {
+        if(Post::where('user_id', Auth::id())->where('created_at', '>=', Carbon::now()->subDay(1))->count() > 0)
+        {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
 }

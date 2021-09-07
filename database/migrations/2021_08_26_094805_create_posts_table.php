@@ -15,12 +15,12 @@ class CreatePostsTable extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->default(1);
+            $table->bigInteger('user_id')->unsigned();
             $table->string('subject');
             $table->text('message');
-            $table->string('file')->default(null);
-            $table->string('file_name')->default(null);
-            $table->text('answer')->default(null);
+            $table->string('file')->nullable();
+            $table->string('file_name')->nullable();
+            $table->text('answer')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
