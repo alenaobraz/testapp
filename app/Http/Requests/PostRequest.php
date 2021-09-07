@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\PostController;
+use App\Models\Post;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class PostRequest extends FormRequest
 {
@@ -13,7 +16,16 @@ class PostRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        //return true;
+        if (PostController::postOnceDay())
+        {
+            return true;
+        }
+        else{
+            back()->withError("Вы можете отправлять не более 1 сообщения в сутки. Следующее не ранее ".Post::where('user_id', Auth::id())->orderBy('created_at','desc')->first()->created_at->addDays(1)->toDateTimeString());
+            return true;
+        }
+
     }
 
     /**

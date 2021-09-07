@@ -22,7 +22,6 @@ class PostController extends Controller
     public function addPost(PostRequest $request)
     {
         if(self::postOnceDay()) {
-
             $post = new Post;
 
             $post->subject = $request->subject;
@@ -44,13 +43,9 @@ class PostController extends Controller
             } catch (\Exception $e) {
                 return back()->withError($e->getMessage())->withInput();
             }
+        }
 
-            return redirect()->route('dashboard');
-        }
-        else
-        {
-            return back()->withError("Вы можете отправлять не более 1 сообщения в сутки. Следующее не ранее ".Post::where('user_id', Auth::id())->orderBy('created_at','desc')->first()->created_at->addDays(1)->toDateTimeString());
-        }
+        return redirect()->route('dashboard');
     }
 
     /**
