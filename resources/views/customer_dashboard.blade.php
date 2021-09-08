@@ -8,23 +8,7 @@
     <input type="submit">
 </form>
 
-@if ($errors->any())
-    <div style="color: red">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-@if (session('error'))
-    <div style="color: red">{{ session('error') }}</div>
-@endif
-
-@if(Session::has('message'))
-    <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{
-     Session::get('message') }}</p>
-@endif
+@include('errors')
 
 <h1>Ваши запросы:</h1>
 <table>
@@ -39,7 +23,7 @@
         <td>Время ответа</td>
     </tr>
     </thead>
-    @foreach(\App\Models\Post::where('user_id', \Illuminate\Support\Facades\Auth::id())->orderBy('created_at')->get() as $index=>$post)
+    @foreach($posts as $index=>$post)
         <tr>
             <td>{{ ++$index }}</td>
             <td>{{ $post->subject }}</td>

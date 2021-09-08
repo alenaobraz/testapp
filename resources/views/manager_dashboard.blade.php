@@ -12,7 +12,7 @@
           <td></td>
         </tr>
     </thead>
-@foreach(\App\Models\Post::where('answer', "")->orderBy('created_at')->get() as $index=>$post)
+    @foreach($posts as $index=>$post)
     <tr>
         <td>{{ ++$index }}</td>
         <td>{{ $post->subject }}</td>

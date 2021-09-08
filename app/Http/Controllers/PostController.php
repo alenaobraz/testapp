@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AnswerRequest;
 use App\Http\Requests\PostRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -12,6 +13,24 @@ use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
+    /**
+     * Вывод начальной страницы личного кабинета.
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function index()
+    {
+        if (auth()->user()->hasRole(Config::get('constants.roles.manager')))
+        {
+            $post = Post::whereNull('answer')->orderBy('created_at')->get();
+        }
+        else
+        {
+            $post = Post::where('user_id', Auth::id())->orderBy('created_at')->get();
+        }
+        return view('dashboard')->with('posts', $post);
+    }
+
 
     /**
      * Сохранить новую заявку клиента, не чаще 1 раза в сутки.
@@ -22,26 +41,21 @@ class PostController extends Controller
     public function addPost(PostRequest $request)
     {
         if(self::postOnceDay()) {
-            $post = new Post;
-
-            $post->subject = $request->subject;
-            $post->message = $request->message;
-            $post->answer = "";
-
-            $post->user_id = Auth::id();
-
-            if ($request->file('file')) {
-                $post->file = self::fileUpload($request->file('file'));
-                $post->file_name = $request->file('file')->getClientOriginalName();
-            } else {
-                $post->file = "";
-                $post->file_name = "";
-            }
-
             try {
-                $post->save();
+                $post = Post::create($request->validated());
             } catch (\Exception $e) {
                 return back()->withError($e->getMessage())->withInput();
+            }
+
+            if ($request->file('file')) {
+                try {
+                    $post->update([
+                        'file' => self::fileUpload($request->file('file')),
+                        'file_name' => $request->file('file')->getClientOriginalName(),
+                    ]);
+                } catch (\Exception $e) {
+                    return back()->withError($e->getMessage())->withInput();
+                }
             }
         }
 
@@ -71,16 +85,12 @@ class PostController extends Controller
     /**
      * Сохранить ответ менеджера на заявку клиента.
      * @param  integer  $id
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\AnswerRequest   $request
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function addAnswer(Request $request, int $id)
+    public function addAnswer(AnswerRequest $request, int $id)
     {
-        $validated = $request->validate([
-            'answer' => 'required',
-        ]);
-
         Post::where('id', $id)->update(array('answer'=>$request->answer, 'updated_at'=>now()));
         return redirect()->route('dashboard');;
     }
@@ -115,6 +125,16 @@ class PostController extends Controller
         else {
             return true;
         }
+    }
+
+    /**
+     * Возвращает дату, после которой можно оставлять новую заявку.
+     *
+     * @return bool
+     */
+    public static function postOnceDayDate()
+    {
+        return Post::where('user_id', Auth::id())->orderBy('created_at','desc')->first()->created_at->addDays(1)->toDateTimeString();
     }
 
 }
